@@ -14,41 +14,34 @@ else
     <div class="analytics-section">
         <h2>Sector Allocation</h2>
         <div class="chart-container">
-            <ApexChart TItem="SectorAllocation"
-                       Title="Portfolio by Sector"
-                       Options="sectorChartOptions">
-                <ApexPointSeries TItem="SectorAllocation"
-                                 Items="analytics.SectorAllocations"
-                                 Name="Value"
-                                 SeriesType="SeriesType.Pie"
-                                 XValue="@(e => e.Sector)"
-                                 YAggregate="@(e => e.Sum(e => (decimal)e.Value))" />
-            </ApexChart>
+            <RadzenChart>
+                <RadzenPieSeries Data="@analytics.SectorAllocations"
+                                 Title="Sector"
+                                 CategoryProperty="Sector"
+                                 ValueProperty="Value">
+                    <RadzenSeriesDataLabels Visible="true" />
+                </RadzenPieSeries>
+            </RadzenChart>
         </div>
 
         <div class="sector-list">
             <h3>Sector Breakdown</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Sector</th>
-                        <th>Value</th>
-                        <th>Allocation</th>
-                        <th>Positions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var sector in analytics.SectorAllocations)
-                    {
-                        <tr>
-                            <td><strong>@sector.Sector</strong></td>
-                            <td>@sector.Value.ToString("C0")</td>
-                            <td>@sector.Percentage.ToString("F2")%</td>
-                            <td>@sector.PositionCount</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            <RadzenDataGrid Data="@analytics.SectorAllocations" TItem="SectorAllocation" AllowPaging="false">
+                <Columns>
+                    <RadzenDataGridColumn TItem="SectorAllocation" Property="Sector" Title="Sector" />
+                    <RadzenDataGridColumn TItem="SectorAllocation" Property="Value" Title="Value">
+                        <Template Context="sector">
+                            @sector.Value.ToString("C0")
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="SectorAllocation" Property="Percentage" Title="Allocation">
+                        <Template Context="sector">
+                            @sector.Percentage.ToString("F2")%
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="SectorAllocation" Property="PositionCount" Title="Positions" />
+                </Columns>
+            </RadzenDataGrid>
         </div>
     </div>
 
@@ -57,16 +50,21 @@ else
         @if (analytics.DividendBreakdown.Any())
         {
             <div class="chart-container">
-                <ApexChart TItem="DividendContribution"
-                           Title="Annual Dividends by Position"
-                           Options="dividendChartOptions">
-                    <ApexPointSeries TItem="DividendContribution"
-                                     Items="analytics.DividendBreakdown"
-                                     Name="Annual Dividend"
-                                     SeriesType="SeriesType.Bar"
-                                     XValue="@(e => e.Symbol)"
-                                     YAggregate="@(e => e.Sum(e => (decimal)e.AnnualDividend))" />
-                </ApexChart>
+                <RadzenChart>
+                    <RadzenColumnSeries Data="@analytics.DividendBreakdown"
+                                       CategoryProperty="Symbol"
+                                       ValueProperty="AnnualDividend"
+                                       Title="Annual Dividend"
+                                       Fill="#10b981">
+                        <RadzenSeriesDataLabels Visible="false" />
+                    </RadzenColumnSeries>
+                    <RadzenValueAxis>
+                        <RadzenAxisTitle Text="Annual Dividend ($)" />
+                    </RadzenValueAxis>
+                    <RadzenCategoryAxis>
+                        <RadzenAxisTitle Text="Symbol" />
+                    </RadzenCategoryAxis>
+                </RadzenChart>
             </div>
 
             <div class="dividend-summary">
@@ -90,33 +88,45 @@ else
         <h2>Performance Attribution</h2>
         @if (analytics.TopContributors.Any())
         {
+            <h3>Top Contributors</h3>
             <div class="chart-container">
-                <ApexChart TItem="PositionContribution"
-                           Title="Top Contributors"
-                           Options="contributorsChartOptions">
-                    <ApexPointSeries TItem="PositionContribution"
-                                     Items="analytics.TopContributors.Take(10).ToList()"
-                                     Name="P&L Contribution"
-                                     SeriesType="SeriesType.Bar"
-                                     XValue="@(e => e.Symbol)"
-                                     YAggregate="@(e => e.Sum(e => (decimal)e.ContributionAmount))" />
-                </ApexChart>
+                <RadzenChart>
+                    <RadzenColumnSeries Data="@analytics.TopContributors.Take(10)"
+                                       CategoryProperty="Symbol"
+                                       ValueProperty="ContributionAmount"
+                                       Title="P&L Contribution"
+                                       Fill="#10b981">
+                        <RadzenSeriesDataLabels Visible="false" />
+                    </RadzenColumnSeries>
+                    <RadzenValueAxis>
+                        <RadzenAxisTitle Text="Contribution ($)" />
+                    </RadzenValueAxis>
+                    <RadzenCategoryAxis>
+                        <RadzenAxisTitle Text="Symbol" />
+                    </RadzenCategoryAxis>
+                </RadzenChart>
             </div>
         }
 
         @if (analytics.TopDetractors.Any())
         {
+            <h3>Top Detractors</h3>
             <div class="chart-container">
-                <ApexChart TItem="PositionContribution"
-                           Title="Top Detractors"
-                           Options="detractorsChartOptions">
-                    <ApexPointSeries TItem="PositionContribution"
-                                     Items="analytics.TopDetractors.Take(10).ToList()"
-                                     Name="P&L Contribution"
-                                     SeriesType="SeriesType.Bar"
-                                     XValue="@(e => e.Symbol)"
-                                     YAggregate="@(e => e.Sum(e => (decimal)e.ContributionAmount))" />
-                </ApexChart>
+                <RadzenChart>
+                    <RadzenColumnSeries Data="@analytics.TopDetractors.Take(10)"
+                                       CategoryProperty="Symbol"
+                                       ValueProperty="ContributionAmount"
+                                       Title="P&L Contribution"
+                                       Fill="#ef4444">
+                        <RadzenSeriesDataLabels Visible="false" />
+                    </RadzenColumnSeries>
+                    <RadzenValueAxis>
+                        <RadzenAxisTitle Text="Contribution ($)" />
+                    </RadzenValueAxis>
+                    <RadzenCategoryAxis>
+                        <RadzenAxisTitle Text="Symbol" />
+                    </RadzenCategoryAxis>
+                </RadzenChart>
             </div>
         }
     </div>
@@ -124,41 +134,10 @@ else
 
 @code {
     private PortfolioAnalytics? analytics;
-    private ApexChartOptions<SectorAllocation> sectorChartOptions = new();
-    private ApexChartOptions<DividendContribution> dividendChartOptions = new();
-    private ApexChartOptions<PositionContribution> contributorsChartOptions = new();
-    private ApexChartOptions<PositionContribution> detractorsChartOptions = new();
 
     protected override async Task OnInitializedAsync()
     {
         analytics = await PortfolioClient.GetAnalyticsAsync();
-
-        sectorChartOptions = new ApexChartOptions<SectorAllocation>
-        {
-            Theme = new Theme { Mode = Mode.Light },
-            Chart = new Chart { Background = "transparent" }
-        };
-
-        dividendChartOptions = new ApexChartOptions<DividendContribution>
-        {
-            Theme = new Theme { Mode = Mode.Light },
-            Chart = new Chart { Background = "transparent" },
-            Colors = new List<string> { "#10b981" }
-        };
-
-        contributorsChartOptions = new ApexChartOptions<PositionContribution>
-        {
-            Theme = new Theme { Mode = Mode.Light },
-            Chart = new Chart { Background = "transparent" },
-            Colors = new List<string> { "#10b981" }
-        };
-
-        detractorsChartOptions = new ApexChartOptions<PositionContribution>
-        {
-            Theme = new Theme { Mode = Mode.Light },
-            Chart = new Chart { Background = "transparent" },
-            Colors = new List<string> { "#ef4444" }
-        };
     }
 }
 
