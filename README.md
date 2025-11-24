@@ -11,10 +11,10 @@ A comprehensive portfolio analysis tool built with .NET 8, Blazor WebAssembly, a
 - **Dividend Tracking**: Analyze dividend income by position and overall yield
 
 ### 📈 Visualizations
-- Interactive charts using ApexCharts (Blazor.ApexCharts)
+- Interactive charts using Radzen Blazor Components
 - Sector allocation pie charts
 - Performance attribution bar charts
-- Dividend contribution analysis
+- Dividend contribution analysis with data grids
 - Real-time portfolio metrics
 
 ### 🔧 Technical Features
@@ -169,7 +169,7 @@ gcloud run deploy portfolio-api \
 - **.NET 8**: Latest LTS version of .NET
 - **Blazor WebAssembly**: Client-side C# framework
 - **.NET Aspire**: Cloud-native orchestration and observability
-- **ApexCharts**: Beautiful, interactive charts via Blazor.ApexCharts
+- **Radzen Blazor**: Beautiful, interactive charts and data grids
 - **Alpha Vantage**: Free fundamental data API
 - **Google Cloud Run**: Serverless container platform (target deployment)
 
