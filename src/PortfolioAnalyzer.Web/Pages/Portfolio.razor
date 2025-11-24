@@ -1,0 +1,151 @@
+@page "/portfolio"
+@inject IPortfolioClient PortfolioClient
+
+<PageTitle>Portfolio Holdings</PageTitle>
+
+<h1>Portfolio Holdings</h1>
+
+@if (portfolio == null)
+{
+    <p><em>Loading portfolio...</em></p>
+}
+else
+{
+    <div class="portfolio-summary">
+        <div class="summary-card">
+            <h3>Total Value</h3>
+            <div class="value">@portfolio.TotalMarketValue.ToString("C2")</div>
+        </div>
+        <div class="summary-card">
+            <h3>Cash</h3>
+            <div class="value">@portfolio.Cash.ToString("C2")</div>
+        </div>
+        <div class="summary-card">
+            <h3>Invested</h3>
+            <div class="value">@portfolio.Positions.Sum(p => p.MarketValue).ToString("C2")</div>
+        </div>
+        <div class="summary-card">
+            <h3>Total Return</h3>
+            <div class="value" style="color: @(portfolio.TotalUnrealizedPnL >= 0 ? "#10b981" : "#ef4444")">
+                @portfolio.TotalUnrealizedPnL.ToString("C2")
+            </div>
+            <div class="subtext">@portfolio.TotalUnrealizedPnLPercent.ToString("F2")%</div>
+        </div>
+    </div>
+
+    <div class="positions-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Avg Cost</th>
+                    <th>Current Price</th>
+                    <th>Market Value</th>
+                    <th>P&L</th>
+                    <th>Return %</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var position in portfolio.Positions.OrderByDescending(p => p.MarketValue))
+                {
+                    <tr>
+                        <td><strong>@position.Symbol</strong></td>
+                        <td>@position.Security?.Name</td>
+                        <td>@position.Quantity.ToString("N2")</td>
+                        <td>@position.AverageCost.ToString("C2")</td>
+                        <td>@position.CurrentPrice.ToString("C2")</td>
+                        <td>@position.MarketValue.ToString("C2")</td>
+                        <td style="color: @(position.UnrealizedPnL >= 0 ? "#10b981" : "#ef4444")">
+                            @position.UnrealizedPnL.ToString("C2")
+                        </td>
+                        <td style="color: @(position.UnrealizedPnLPercent >= 0 ? "#10b981" : "#ef4444")">
+                            @position.UnrealizedPnLPercent.ToString("F2")%
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private Portfolio? portfolio;
+
+    protected override async Task OnInitializedAsync()
+    {
+        portfolio = await PortfolioClient.GetPortfolioAsync();
+    }
+}
+
+<style>
+    .portfolio-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .summary-card h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    .summary-card .value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .summary-card .subtext {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .positions-table {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 0.75rem;
+        background: #f9fafb;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    tr:hover {
+        background: #f9fafb;
+    }
+</style>

@@ -1,0 +1,193 @@
+@page "/"
+@inject IPortfolioClient PortfolioClient
+
+<PageTitle>Portfolio Dashboard</PageTitle>
+
+<h1>Portfolio Dashboard</h1>
+
+@if (portfolio == null || analytics == null)
+{
+    <p><em>Loading portfolio data...</em></p>
+}
+else
+{
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>Portfolio Value</h3>
+            <div class="metric-value">@portfolio.TotalMarketValue.ToString("C0")</div>
+            <div class="metric-label">Total Market Value</div>
+        </div>
+
+        <div class="card">
+            <h3>Total P&L</h3>
+            <div class="metric-value" style="color: @(portfolio.TotalUnrealizedPnL >= 0 ? "#10b981" : "#ef4444")">
+                @portfolio.TotalUnrealizedPnL.ToString("C0")
+            </div>
+            <div class="metric-label">@portfolio.TotalUnrealizedPnLPercent.ToString("F2")% Return</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Revenue</h3>
+            <div class="metric-value">@analytics.TotalRevenue.ToString("C0")</div>
+            <div class="metric-label">Weighted Portfolio Revenue</div>
+        </div>
+
+        <div class="card">
+            <h3>Free Cash Flow</h3>
+            <div class="metric-value">@analytics.TotalFreeCashFlow.ToString("C0")</div>
+            <div class="metric-label">Weighted Portfolio FCF</div>
+        </div>
+
+        <div class="card">
+            <h3>Revenue Growth</h3>
+            <div class="metric-value">@analytics.WeightedRevenueGrowth.ToString("F2")%</div>
+            <div class="metric-label">Weighted Growth Rate</div>
+        </div>
+
+        <div class="card">
+            <h3>Earnings Growth</h3>
+            <div class="metric-value">@analytics.WeightedEarningsGrowth.ToString("F2")%</div>
+            <div class="metric-label">Weighted Earnings Growth</div>
+        </div>
+
+        <div class="card">
+            <h3>Annual Dividends</h3>
+            <div class="metric-value">@analytics.TotalAnnualDividends.ToString("C0")</div>
+            <div class="metric-label">@analytics.TotalDividendYield.ToString("F2")% Yield</div>
+        </div>
+
+        <div class="card">
+            <h3>Positions</h3>
+            <div class="metric-value">@portfolio.Positions.Count</div>
+            <div class="metric-label">Active Holdings</div>
+        </div>
+    </div>
+
+    <div class="charts-section">
+        <h2>Top Contributors</h2>
+        @if (analytics.TopContributors.Any())
+        {
+            <div class="contributors-list">
+                @foreach (var contributor in analytics.TopContributors.Take(5))
+                {
+                    <div class="contributor-item">
+                        <div class="contributor-name">
+                            <strong>@contributor.Symbol</strong> - @contributor.Name
+                        </div>
+                        <div class="contributor-value" style="color: #10b981;">
+                            +@contributor.ContributionAmount.ToString("C0") (@contributor.ContributionPercent.ToString("F2")%)
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <h2>Top Detractors</h2>
+        @if (analytics.TopDetractors.Any())
+        {
+            <div class="contributors-list">
+                @foreach (var detractor in analytics.TopDetractors.Take(5))
+                {
+                    <div class="contributor-item">
+                        <div class="contributor-name">
+                            <strong>@detractor.Symbol</strong> - @detractor.Name
+                        </div>
+                        <div class="contributor-value" style="color: #ef4444;">
+                            @detractor.ContributionAmount.ToString("C0") (@detractor.ContributionPercent.ToString("F2")%)
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p>No detractors - all positions are profitable!</p>
+        }
+    </div>
+}
+
+@code {
+    private Portfolio? portfolio;
+    private PortfolioAnalytics? analytics;
+
+    protected override async Task OnInitializedAsync()
+    {
+        portfolio = await PortfolioClient.GetPortfolioAsync();
+        analytics = await PortfolioClient.GetAnalyticsAsync();
+    }
+}
+
+<style>
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card h3 {
+        margin: 0 0 1rem 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #111827;
+    }
+
+    .metric-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .charts-section {
+        margin-top: 2rem;
+    }
+
+    .charts-section h2 {
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .contributors-list {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .contributor-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .contributor-item:last-child {
+        border-bottom: none;
+    }
+
+    .contributor-name {
+        font-size: 0.9rem;
+    }
+
+    .contributor-value {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+</style>

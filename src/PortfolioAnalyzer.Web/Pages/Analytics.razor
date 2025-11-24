@@ -1,0 +1,237 @@
+@page "/analytics"
+@inject IPortfolioClient PortfolioClient
+
+<PageTitle>Portfolio Analytics</PageTitle>
+
+<h1>Portfolio Analytics</h1>
+
+@if (analytics == null)
+{
+    <p><em>Loading analytics...</em></p>
+}
+else
+{
+    <div class="analytics-section">
+        <h2>Sector Allocation</h2>
+        <div class="chart-container">
+            <ApexChart TItem="SectorAllocation"
+                       Title="Portfolio by Sector"
+                       Options="sectorChartOptions">
+                <ApexPointSeries TItem="SectorAllocation"
+                                 Items="analytics.SectorAllocations"
+                                 Name="Value"
+                                 SeriesType="SeriesType.Pie"
+                                 XValue="@(e => e.Sector)"
+                                 YAggregate="@(e => e.Sum(e => (decimal)e.Value))" />
+            </ApexChart>
+        </div>
+
+        <div class="sector-list">
+            <h3>Sector Breakdown</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sector</th>
+                        <th>Value</th>
+                        <th>Allocation</th>
+                        <th>Positions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sector in analytics.SectorAllocations)
+                    {
+                        <tr>
+                            <td><strong>@sector.Sector</strong></td>
+                            <td>@sector.Value.ToString("C0")</td>
+                            <td>@sector.Percentage.ToString("F2")%</td>
+                            <td>@sector.PositionCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="analytics-section">
+        <h2>Dividend Analysis</h2>
+        @if (analytics.DividendBreakdown.Any())
+        {
+            <div class="chart-container">
+                <ApexChart TItem="DividendContribution"
+                           Title="Annual Dividends by Position"
+                           Options="dividendChartOptions">
+                    <ApexPointSeries TItem="DividendContribution"
+                                     Items="analytics.DividendBreakdown"
+                                     Name="Annual Dividend"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(e => e.Symbol)"
+                                     YAggregate="@(e => e.Sum(e => (decimal)e.AnnualDividend))" />
+                </ApexChart>
+            </div>
+
+            <div class="dividend-summary">
+                <div class="summary-card">
+                    <h4>Total Annual Dividends</h4>
+                    <div class="big-value">@analytics.TotalAnnualDividends.ToString("C2")</div>
+                </div>
+                <div class="summary-card">
+                    <h4>Portfolio Yield</h4>
+                    <div class="big-value">@analytics.TotalDividendYield.ToString("F2")%</div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <p>No dividend-paying positions in portfolio.</p>
+        }
+    </div>
+
+    <div class="analytics-section">
+        <h2>Performance Attribution</h2>
+        @if (analytics.TopContributors.Any())
+        {
+            <div class="chart-container">
+                <ApexChart TItem="PositionContribution"
+                           Title="Top Contributors"
+                           Options="contributorsChartOptions">
+                    <ApexPointSeries TItem="PositionContribution"
+                                     Items="analytics.TopContributors.Take(10).ToList()"
+                                     Name="P&L Contribution"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(e => e.Symbol)"
+                                     YAggregate="@(e => e.Sum(e => (decimal)e.ContributionAmount))" />
+                </ApexChart>
+            </div>
+        }
+
+        @if (analytics.TopDetractors.Any())
+        {
+            <div class="chart-container">
+                <ApexChart TItem="PositionContribution"
+                           Title="Top Detractors"
+                           Options="detractorsChartOptions">
+                    <ApexPointSeries TItem="PositionContribution"
+                                     Items="analytics.TopDetractors.Take(10).ToList()"
+                                     Name="P&L Contribution"
+                                     SeriesType="SeriesType.Bar"
+                                     XValue="@(e => e.Symbol)"
+                                     YAggregate="@(e => e.Sum(e => (decimal)e.ContributionAmount))" />
+                </ApexChart>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private PortfolioAnalytics? analytics;
+    private ApexChartOptions<SectorAllocation> sectorChartOptions = new();
+    private ApexChartOptions<DividendContribution> dividendChartOptions = new();
+    private ApexChartOptions<PositionContribution> contributorsChartOptions = new();
+    private ApexChartOptions<PositionContribution> detractorsChartOptions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        analytics = await PortfolioClient.GetAnalyticsAsync();
+
+        sectorChartOptions = new ApexChartOptions<SectorAllocation>
+        {
+            Theme = new Theme { Mode = Mode.Light },
+            Chart = new Chart { Background = "transparent" }
+        };
+
+        dividendChartOptions = new ApexChartOptions<DividendContribution>
+        {
+            Theme = new Theme { Mode = Mode.Light },
+            Chart = new Chart { Background = "transparent" },
+            Colors = new List<string> { "#10b981" }
+        };
+
+        contributorsChartOptions = new ApexChartOptions<PositionContribution>
+        {
+            Theme = new Theme { Mode = Mode.Light },
+            Chart = new Chart { Background = "transparent" },
+            Colors = new List<string> { "#10b981" }
+        };
+
+        detractorsChartOptions = new ApexChartOptions<PositionContribution>
+        {
+            Theme = new Theme { Mode = Mode.Light },
+            Chart = new Chart { Background = "transparent" },
+            Colors = new List<string> { "#ef4444" }
+        };
+    }
+}
+
+<style>
+    .analytics-section {
+        margin-bottom: 3rem;
+    }
+
+    .analytics-section h2 {
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+
+    .sector-list, .dividend-summary {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .dividend-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .summary-card {
+        text-align: center;
+    }
+
+    .summary-card h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.875rem;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    .big-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 0.75rem;
+        background: #f9fafb;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #374151;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+</style>

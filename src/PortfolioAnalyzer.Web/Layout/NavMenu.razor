@@ -1,0 +1,55 @@
+<div class="nav-menu">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill" aria-hidden="true"></span> Dashboard
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="portfolio">
+                <span class="bi bi-briefcase-fill" aria-hidden="true"></span> Portfolio
+            </NavLink>
+        </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="analytics">
+                <span class="bi bi-graph-up" aria-hidden="true"></span> Analytics
+            </NavLink>
+        </div>
+    </nav>
+</div>
+
+<style>
+    .nav-menu {
+        background: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+        padding: 1rem;
+    }
+
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .nav-link {
+        color: #d7d7d7;
+        border-radius: 4px;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        line-height: 3rem;
+        text-decoration: none;
+        padding: 0 1rem;
+    }
+
+    .nav-link:hover {
+        background-color: rgba(255,255,255,0.1);
+        color: white;
+    }
+
+    .nav-link.active {
+        background-color: rgba(255,255,255,0.25);
+        color: white;
+    }
+
+    .nav-link span {
+        margin-right: 0.5rem;
+    }
+</style>
