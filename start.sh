@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Portfolio Analyzer Startup Script
+# This script starts both the API and Web projects
+
+echo "🚀 Starting Portfolio Analyzer..."
+echo ""
+
+# Get the script directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Create logs directory
+mkdir -p "$SCRIPT_DIR/logs"
+
+# Start API
+echo "📡 Starting API service..."
+cd "$SCRIPT_DIR/src/PortfolioAnalyzer.Api"
+dotnet run > "$SCRIPT_DIR/logs/api.log" 2>&1 &
+API_PID=$!
+echo "   API PID: $API_PID"
+
+# Wait a bit for API to start
+sleep 3
+
+# Start Web
+echo "🌐 Starting Web application..."
+cd "$SCRIPT_DIR/src/PortfolioAnalyzer.Web"
+dotnet run > "$SCRIPT_DIR/logs/web.log" 2>&1 &
+WEB_PID=$!
+echo "   Web PID: $WEB_PID"
+
+# Save PIDs to file for stop script
+echo "$API_PID" > "$SCRIPT_DIR/.api.pid"
+echo "$WEB_PID" > "$SCRIPT_DIR/.web.pid"
+
+echo ""
+echo "⏳ Waiting for services to start..."
+sleep 8
+
+echo ""
+echo "✅ Portfolio Analyzer is running!"
+echo ""
+echo "📊 Dashboard: https://localhost:5001"
+echo "🔌 API:       https://localhost:7000"
+echo "📋 Swagger:   https://localhost:7000/swagger"
+echo ""
+echo "📝 Logs:"
+echo "   API: $SCRIPT_DIR/logs/api.log"
+echo "   Web: $SCRIPT_DIR/logs/web.log"
+echo ""
+echo "🛑 To stop: ./stop.sh"
+echo ""
+
+# Open browser (macOS)
+sleep 2
+if command -v open &> /dev/null; then
+    echo "🌍 Opening browser..."
+    open https://localhost:5001
+fi
+
+echo ""
+echo "Press Ctrl+C to view this information again, or use ./stop.sh to stop all services."
+echo ""
+
+# Keep script running
+tail -f /dev/null
