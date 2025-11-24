@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PortfolioAnalyzer.Shared\PortfolioAnalyzer.Shared.csproj" />
-    <ProjectReference Include="..\PortfolioAnalyzer.ServiceDefaults\PortfolioAnalyzer.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
